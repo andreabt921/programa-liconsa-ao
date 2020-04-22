@@ -91,8 +91,8 @@ function initMap() {
    
 }
 
-function placePlaces(col, place) {
-    let p = establecimientos.filter(b => b.COLONIA == col && b.NOMBRE_ESTABLECIMIENTO == place)
+function placeNPlaces(col) {
+    let p = establecimientos.filter(b => b.COLONIA == col)
             .map(b => {
                 const lng = b.LONGITUD != 0 ? Number(b.LONGITUD) : -99.1269;
                 const lat = b.LATITUD != 0 ? Number(b.LATITUD) : 19.4978;
@@ -115,10 +115,52 @@ function placePlaces(col, place) {
  
 }
 
+function placePlaces(col, place) {
+    let p = establecimientos.filter(b => b.COLONIA == col && b.NOMBRE_ESTABLECIMIENTO == place)
+            .map(b => {
+                const lng = b.LONGITUD != 0 ? Number(b.LONGITUD) : -99.1269;
+                const lat = b.LATITUD != 0 ? Number(b.LATITUD) : 19.4978;
+                return {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lng, lat]
+                    },
+                    "properties": {
+                        "id": b.id
+                    }
+                }
+            });
+    
+    if (!p.length) {
+        p = establecimientos.filter(b => b.COLONIA == col)
+            .map(b => {
+                const lng = b.LONGITUD != 0 ? Number(b.LONGITUD) : -99.1269;
+                const lat = b.LATITUD != 0 ? Number(b.LATITUD) : 19.4978;
+                return {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lng, lat]
+                    },
+                    "properties": {
+                        "id": b.id
+                    }
+                }
+            });
+    }
+ 
+    map.getSource('ao-liconsa-src').setData({
+        "type": "FeatureCollection",
+        "features": p
+    });
+ 
+}
+
 $(function(){ 
     initMap();
     filterNeighborhoods();
-    
+
     $('#neighborhood-select').on('change',function() {
         map.getSource('ao-liconsa-src').setData({
             "type": "FeatureCollection",
@@ -126,6 +168,7 @@ $(function(){
         });
         $('#establecimiento-select').empty().html('<option selected value="default">Selecciona una opción</option>');
         filterPlaces(this.value);
+        placeNPlaces(this.value);
     });
 
     $('#establecimiento-select').on('change',function() {
